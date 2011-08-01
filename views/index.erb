@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Team City: Build Health</title>
+
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.1.7/underscore-min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.6.3/sammy.min.js"></script>
+        <script src="https://github.com/janl/mustache.js/raw/master/mustache.js"></script>
+		<script src="https://github.com/quirkey/sammy/raw/v0.6.3/lib/min/plugins/sammy.mustache-latest.min.js"></script>
+		<script src="https://github.com/quirkey/sammy/raw/v0.6.3/lib/min/plugins/sammy.mustache-0.6.3.min.js"></script>
+		<script>
+            (function($) {
+
+              var meme = {
+                  green : ["","ruminant.png","chargrined.png","masturbatory.png","dontknow.png","indefatigable.png"],
+                  red : ["apoplectic.png","bilious.png","livid.png","inimical.png","damned.png"]
+              };
+
+              var app =  $.sammy('#main',function(){
+
+                    this.use('Mustache',"ms");
+
+                    this.get('#/', function(ctx){
+                        $.ajax({
+                            url: "/projects",
+                            dataType: "json",
+                            success: function(json){
+                                var template = $("#projects").html();
+                                var output = Mustache.to_html(template, json);
+                                $("#main").html(output);
+                            }
+                        });
+                    });
+
+                    this.get('#/projects/:id',function(){
+                        $.ajax({
+                            url: "/projects/" + this.params['id'],
+                            dataType: 'json',
+                            success: function (json){
+                                var builds = {builds:[]};
+
+                                _.each(json.buildType, function(build){
+                                    build.color = _.first(build.history).status == "SUCCESS" ? "green" :"red";
+                                    build.successCount = _.select(build.history, function (build) {return build.status == "SUCCESS"}).length;
+                                    build.imageURL = "/images/memes/" + meme[build.color][build.successCount];
+                                    builds.builds.push(build);
+                                })
+
+                                var template = $("#project").html();
+                                var output = Mustache.to_html(template, builds);
+                                $("#main").html(output);
+                            }
+                        });
+                    });
+                    this.get('#/builds/:projectId', function(){
+
+                    });
+                });
+
+                $(function(){
+                    app.run("#/");
+                });
+            })(jQuery);
+
+        </script>
+        <style>
+            .builds li{float:left;list-style:none;margin:10px;border: solid 1px #333; padding:10px;}
+            li h1 {text-align:center;}
+            .green h1{color:green;}
+            .red h1{color:red;}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+
+            <div id="main">
+
+            </div>
+
+        </div>
+
+        <script type="text/html" id="project">
+            <ul class="builds">
+                {{#builds}}
+                    <li class="{{color}}">
+                    <a href="#/builds/{{id}}">
+                    <h1>{{name}}</h1>
+                        <img src="{{imageURL}}"/>
+
+                        </li>
+                    </a>
+                {{/builds}}
+            </ul>
+        </script>
+        <script type="text/html" id="projects">
+            <ul>
+                {{#project}}
+                <li><a href="#/projects/{{id}}">{{name}}</a></li>
+                {{/project}}
+            
+            </ul>
+        </script>
+
+    </body>
+</html>
