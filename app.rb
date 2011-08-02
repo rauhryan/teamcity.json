@@ -5,12 +5,14 @@ require 'net/http'
 require 'crack'
 require 'nokogiri'
 
-URL = "http://teamcity.codebetter.com/guestAuth/app/rest/"
+DOMAIN = "http://teamcity.codebetter.com"
+#DOMAIN = "http://teamcity:8082"
+URL = "#{DOMAIN}/guestAuth/app/rest/"
 
 get '/projects' do 
     content_type :json
 
-    http = Net::HTTP.new("teamcity.codebetter.com")
+    http = Net::HTTP.new(DOMAIN)
     resp, data = http.get("/guestAuth/app/rest/projects", {'Accept', "application/json"})
     data
 end
@@ -18,7 +20,7 @@ end
 get "/projects/:id" do |id|
     content_type :json
 
-    http = Net::HTTP.new("teamcity.codebetter.com")
+    http = Net::HTTP.new(DOMAIN)
     resp, data = http.get("/guestAuth/app/rest/projects/id:#{id}/buildTypes", {'Accept', "application/json"})
     
     buildTypes = Crack::JSON.parse(data)
@@ -36,5 +38,11 @@ end
 
 get '/' do 
     erb :index
+end
+
+def api(route, &block)
+    http = Net::HTTP.new(DOMAIN)
+    resp, data = http.get(route, {'Accept', "application/json"})
+    block.call data
 end
 
