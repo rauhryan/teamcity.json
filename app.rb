@@ -5,7 +5,7 @@ require 'net/http'
 require 'crack'
 require 'nokogiri'
 
-DOMAIN = "http://teamcity.codebetter.com"
+DOMAIN = "teamcity.codebetter.com"
 #DOMAIN = "http://teamcity:8082"
 URL = "#{DOMAIN}/guestAuth/app/rest/"
 
