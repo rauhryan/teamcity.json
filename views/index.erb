@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<title>Team City: Build Health</title>
 
+		<link href="/styles/reset.css" rel="stylesheet" />
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.1.7/underscore-min.js"></script>
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.6.3/sammy.min.js"></script>
@@ -54,8 +55,29 @@
                             }
                         });
                     });
-                    this.get('#/builds/:projectId', function(){
+                    this.get('#/builds/all', function(){
 
+                        $.ajax({
+                            url: "/builds/all",
+                            dataType: 'json',
+                            success: function (json){
+                                var projects = {projects:[]};
+
+                                _.each(json.project, function(project){
+					_.each(project.builds, function(build){
+					    build.color = _.first(build.history).status == "SUCCESS" ? "green" :"red";
+					    build.successCount = _.select(build.history, function (build) {return build.status == "SUCCESS"}).length;
+					    build.imageURL = "/images/memes/" + meme[build.color][build.successCount];
+
+					})
+					projects.projects.push(project);
+                                })
+				console.log(projects);
+                                var template = $("#builds").html();
+                                var output = Mustache.to_html(template, projects);
+                                $("#main").html(output);
+                            }
+                        });
                     });
                 });
 
@@ -66,10 +88,15 @@
 
         </script>
         <style>
-            .builds li{float:left;list-style:none;margin:10px;border: solid 1px #333; padding:10px;}
-            li h1 {text-align:center;}
-            .green h1{color:green;}
-            .red h1{color:red;}
+	    #projects{overflow:hidden;}
+	    .project {overflow:hidden;width:49%;float:left;}
+	    .builds {}
+	    .build {width:160px;}
+            .builds li{float:left;list-style:none;margin:5px 0;border: solid 1px #333; padding:10px;}
+            li h2,li h3 {text-align:center;margin:5px 0;}
+            .green h3{color:green;}
+            .red h3{color:red;}
+	    img {height:150px;}
         </style>
     </head>
     <body>
@@ -81,16 +108,33 @@
 
         </div>
 
+        <script type="text/html" id="builds">
+		<ul id="projects"> 
+			{{#projects}}
+
+                    <li class="project">
+		    <h2>{{name}}</h2>
+			<ul class="builds">
+			{{#builds}}
+			    <li class="build {{color}}">
+			    <h3>{{name}}</h3>
+				<img src="{{imageURL}}"/>
+
+				</li>
+			{{/builds}}
+            </ul>
+                        </li>
+			{{/projects}}
+            </ul>
+        </script>
         <script type="text/html" id="project">
             <ul class="builds">
                 {{#builds}}
                     <li class="{{color}}">
-                    <a href="#/builds/{{id}}">
                     <h1>{{name}}</h1>
                         <img src="{{imageURL}}"/>
 
                         </li>
-                    </a>
                 {{/builds}}
             </ul>
         </script>
