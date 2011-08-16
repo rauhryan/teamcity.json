@@ -55,6 +55,14 @@
                             }
                         });
                     });
+                    this.get('#/theme/:color/:number', function(){
+                        var imgUrl = {img: "/images/memes/" + meme[this.params['color']][this.params['number']]};
+                        console.log(this.params);
+                           var template = $("#img").html();
+                                var output = Mustache.to_html(template, imgUrl);
+                                $("#main").html(output);  
+
+                    });
                     this.get('#/builds/all', function(){
 
                         $.ajax({
@@ -147,5 +155,8 @@
             </ul>
         </script>
 
+        <script type="text/html" id="img">
+            <img src="{{img}}"   />
+        </script>
     </body>
 </html>

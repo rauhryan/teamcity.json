@@ -6,8 +6,8 @@ require 'crack'
 require 'nokogiri'
 
 #DOMAIN = "teamcity.codebetter.com"
-DOMAIN = "teamcity"
-PORT = 8082
+DOMAIN = "teamcity.codebetter.com"
+PORT = 80
 URL = "#{DOMAIN}/guestAuth/app/rest/"
 
 get '/projects' do 
